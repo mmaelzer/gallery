@@ -1,17 +1,3 @@
-
-jQuery.fn.centerVertically = function() {
-	this.css("position", "absolute");
-	this.css("top", (($(window).height() - this.outerHeight()) / 2) + $(window).scrollTop() + 'px');
-	return this;
-}
-
-jQuery.fn.padTopBottom = function(top, bottom) {
-	this.css("position", "absolute");
-	this.css("top", (top + 'px'));
-	this.css("height", (($(window).height() - top - bottom) + 'px'));
-	return this;
-}
-
 var Gallery = {}
 
 Gallery.View = (function() {
@@ -20,7 +6,6 @@ Gallery.View = (function() {
 		id: 'album-strip',
 		tagName: 'ul',
 		initialize: function(options) {
-			
 			_(this).bindAll('addAlbum', 'hideStrip', 'selectAlbum', 'showStrip');
 			
 			this.albums = options.albums;
@@ -220,7 +205,6 @@ Gallery.View = (function() {
 			"click #display-albums-icon" : "albumsButtonClick"
 		},
 		initialize: function(options) {
-			
 			_(this).bindAll('albumsButtonClick');
 			
 			this.albums = options.albums;
@@ -234,10 +218,7 @@ Gallery.View = (function() {
 			return this;
 		},
 		refresh: function() {
-			$(this.el).children('#album-title').text(this.getAlbum().get('name'));
-			//$(this.el).html('');
-			//var template = _.template(Template.MenuBar, { album_name: this.getAlbum().get('name') });
-			//$(this.el).html(template);			
+			$(this.el).children('#album-title').text(this.getAlbum().get('name'));		
 		},
 		albumsButtonClick: function() {
 			if (this.albumStripVisible) {
@@ -390,7 +371,7 @@ Gallery.Model = (function() {
 Gallery.Collection = (function() {
 	var Albums = Backbone.Collection.extend({
 		model: Gallery.Model.Album,
-		url: 'gallery_json.txt'
+		url: 'sample_json.txt'
 	});
 	
 	var Photos = Backbone.Collection.extend({
