@@ -398,7 +398,7 @@ Gallery.Router = (function() {
 			
 			this.initialized = true;
 			$.ajax({
-				url: 'gallery_json.txt',
+				url: 'sample.json',
 				context: this,
 				dataType: 'json',
 				success: function(data) {
