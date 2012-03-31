@@ -1,7 +1,6 @@
-var Gallery = {}
+var Gallery = {};
 
-Gallery.View = (function() {
-	
+Gallery.View = (function() {	
 	var AlbumStrip = Backbone.View.extend({
 		id: 'album-strip',
 		tagName: 'ul',
@@ -63,7 +62,7 @@ Gallery.View = (function() {
 		onClick: function() {
 			this.selectAlbumCallback(this.album);
 		}
-	})
+	});
 	
 	var GalleryView = Backbone.View.extend({
 		id: 'album',
@@ -83,7 +82,7 @@ Gallery.View = (function() {
 		},
 		initAlbum: function(albumid) {
 			this.currentAlbum = this.albums.filter(function(a){
-				return a.get('id') == albumid;
+				return a.get('id') === albumid;
 			})[0];
 			
 			if (!this.currentAlbum) {
@@ -156,7 +155,7 @@ Gallery.View = (function() {
 			this.router.navigate('album/' + album.get('id') + '/' + album.get('photos')[0].id, true);
 		},
 		navigateToPhoto: function(photo) {
-			this.router.navigate('album/' + this.currentAlbum.get('id') + '/' + photo.get('id'), true)
+			this.router.navigate('album/' + this.currentAlbum.get('id') + '/' + photo.get('id'), true);
 		},
 		nextPhoto: function() {
 			var currIndex = this.photos.indexOf(this.currentPhoto);
@@ -169,19 +168,19 @@ Gallery.View = (function() {
 		},
 		prevPhoto: function() {
 			var currIndex = this.photos.indexOf(this.currentPhoto);
-			if (currIndex == 0) {
+			if (currIndex === 0) {
 				currIndex = this.photos.toArray().length;
 			}
 			this.currentPhoto = this.photos.toArray()[currIndex - 1];
 			this.navigateToPhoto(this.currentPhoto);
 		},
 		selectPhoto: function(albumid, photoid) {
-			if (this.currentAlbum.get('id') != albumid) {
+			if (this.currentAlbum.get('id') !== albumid) {
 				this.initAlbum(albumid);
 			}
 			
 			this.currentPhoto = this.photos.find(function(p) { 
-				return p.get('id') == photoid; 
+				return p.get('id') === photoid; 
 			});
 			this.currentIndex = photoid;
 			this.photoView.showPhoto(this.currentPhoto);
@@ -309,14 +308,13 @@ Gallery.View = (function() {
 		},
 		selectPhoto: function(photo) {
 			_.each(this.thumbnails, function(t) {
-				if (t.photo == photo) {
+				if (t.photo === photo) {
 					t.selected(true);
 				} else {
 					t.selected(false);
 				}
 			});
-		},
-		
+		}		
 	});	
 	
 	var Thumbnail = Backbone.View.extend({
@@ -351,7 +349,7 @@ Gallery.View = (function() {
 	});
 	
 	return {
-		GalleryView: GalleryView,
+		GalleryView: GalleryView
 	};
 })();
 
@@ -375,7 +373,7 @@ Gallery.Collection = (function() {
 	});
 	
 	var Photos = Backbone.Collection.extend({
-		model: Gallery.Model.Photo,
+		model: Gallery.Model.Photo
 	});
 	
 	return {
@@ -404,7 +402,7 @@ Gallery.Router = (function() {
 				context: this,
 				dataType: 'json',
 				success: function(data) {
-					var albums = new Gallery.Collection.Albums(data)
+					var albums = new Gallery.Collection.Albums(data);
 					this.albumView = new Gallery.View.GalleryView({
 						albums: albums,
 						router: this,
