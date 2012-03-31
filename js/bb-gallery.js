@@ -82,7 +82,7 @@ Gallery.View = (function() {
 		},
 		initAlbum: function(albumid) {
 			this.currentAlbum = this.albums.filter(function(a){
-				return a.get('id') === albumid;
+				return a.get('id') == albumid;
 			})[0];
 			
 			if (!this.currentAlbum) {
@@ -175,12 +175,12 @@ Gallery.View = (function() {
 			this.navigateToPhoto(this.currentPhoto);
 		},
 		selectPhoto: function(albumid, photoid) {
-			if (this.currentAlbum.get('id') !== albumid) {
+			if (this.currentAlbum.get('id') != albumid) {
 				this.initAlbum(albumid);
 			}
 			
 			this.currentPhoto = this.photos.find(function(p) { 
-				return p.get('id') === photoid; 
+				return p.get('id') == photoid; 
 			});
 			this.currentIndex = photoid;
 			this.photoView.showPhoto(this.currentPhoto);
