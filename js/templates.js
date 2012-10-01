@@ -6,9 +6,11 @@ var Template = (function() {
 					<span><%= album_name %></span> \
 					";
 	var MenuBar = "\
-					<h1 id='album-title'><%= album_name %></h1> \
-					<button id='display-albums-button'></button> \
-					<div class='down-triangle' id='display-albums-icon'></div> \
+					<div id='album-bar'> \
+						<h1 id='album-title'><%= album_name %></h1> \
+						<button id='display-albums-button'></button> \
+						<div class='down-triangle' id='display-albums-icon'></div> \
+					</div> \
 					";
 	var PhotoView = "\
 					<div id='photo-frame'> \
