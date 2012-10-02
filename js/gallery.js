@@ -173,17 +173,21 @@ Gallery.View = (function() {
 				});		
 
 				// create a new photo collection with list of photo models
-				this.photos = new Gallery.Collection.Photos(photos);			
-				this.photos.on('change:selected', function(photo, selected) {
-					// set all other photos to deselected
-					if (selected) {
-						_this.photos.each(function (otherPhoto) {
-							if (otherPhoto.id !== photo.id) {
-								otherPhoto.set('selected', false);
-							}
-						});
-					}
-				});
+				if (this.photos == undefined) {
+					this.photos = new Gallery.Collection.Photos(photos);				
+					this.photos.on('change:selected', function(photo, selected) {
+						// set all other photos to deselected
+						if (selected) {
+							_this.photos.each(function (otherPhoto) {
+								if (otherPhoto.id !== photo.id) {
+									otherPhoto.set('selected', false, { silent: true });
+								}
+							});
+						}
+					});			
+				} else {
+					this.photos.reset(photos);
+				}
 				// select the first photo in the album
 				this.photos.first().set('selected', true);
 			}
@@ -215,7 +219,7 @@ Gallery.View = (function() {
 			this.albums.on('change:selected', function(album, selected) {
 				if (selected) {
 					_this.selectedAlbum = album;
-					$(_this.el).children('#album-title').text(album.get('name'));		
+					$(_this.el).find('#album-title').text(album.get('name'));		
 				}
 			});
 
@@ -235,15 +239,15 @@ Gallery.View = (function() {
 			this.albumStripVisible = !this.albumStripVisible;
 
 			if (!this.albumStripVisible) {
-				$(this.el).children('#display-albums-icon').removeClass('up-triangle');
-				$(this.el).children('#display-albums-icon').addClass('down-triangle');
-				$(this.el).children('#display-albums-icon').css('top', '23px');
+				$(this.el).find('#display-albums-icon').removeClass('up-triangle');
+				$(this.el).find('#display-albums-icon').addClass('down-triangle');
+				$(this.el).find('#display-albums-icon').css('top', '23px');
 
 				this.albumStrip.hideStrip();
 			} else {
-				$(this.el).children('#display-albums-icon').removeClass('down-triangle');
-				$(this.el).children('#display-albums-icon').addClass('up-triangle');
-				$(this.el).children('#display-albums-icon').css('top', '12px');
+				$(this.el).find('#display-albums-icon').removeClass('down-triangle');
+				$(this.el).find('#display-albums-icon').addClass('up-triangle');
+				$(this.el).find('#display-albums-icon').css('top', '12px');
 
 				this.albumStrip.showStrip();
 			}
@@ -310,9 +314,11 @@ Gallery.View = (function() {
 		id: 'thumbnail-strip',
 		tagName: 'ul',
 		initialize: function(options) {
+			_.bindAll(this, 'addThumbnail', 'refresh');
+
 			this.photos = options.photos;
+			this.photos.on('reset', this.refresh);
 			this.thumbnails = new Array();
-			_.bindAll(this, 'addThumbnail');
 		},
 		render: function() {			
 			this.photos.each(this.addThumbnail);
@@ -325,11 +331,9 @@ Gallery.View = (function() {
 			this.thumbnails.push(thumb);
 			$(this.el).append(thumb.render().el);
 		},
-		loadPhotos: function(photos) {
-			this.photos = photos;
-
+		refresh: function() {
 			$(this.el).html('');
-			this.thumbnails.length = 0;
+			this.thumbnails = new Array();
 			this.photos.each(this.addThumbnail);
 		}		
 	});	
@@ -341,14 +345,15 @@ Gallery.View = (function() {
 			'click' : 'select'
 		},
 		initialize: function(options) {
+			var _this = this;
 			this.photo = options.photo;
 			this.photo.on('change:selected', function(photo, selected) {
 				// toggle the thumbnail as unselected/selected
 				var classToAdd = selected ? 'thumbnail-selected' : 'thumbnail-unselected';
 				var classToRemove = selected ? 'thumbnail-unselected' : 'thumbnail-selected';
 
-				$(this.el).children('img').removeClass(classToRemove);
-				$(this.el).children('img').addClass(classToAdd);
+				$(_this.el).children('img').removeClass(classToRemove);
+				$(_this.el).children('img').addClass(classToAdd);
 			});
 		},
 		render: function() {	
@@ -399,7 +404,6 @@ Gallery.Router = (function() {
 					$('body').append(this.albumView.render().el);
 					if (photo) {
 						this.albumView.selectPhoto(album, photo);
-						//this.navigate('album/' + album + '/' + photo, true);
 					}
 				}
 			});			
