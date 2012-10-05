@@ -124,11 +124,17 @@ Gallery.View = (function() {
 			var _this = this;
 
 			// bind 'this' to the following functions
-			_.bindAll(this, 'navigateToPhoto', 'navigateToAlbum', 'albumSelected');
+			_.bindAll(this, 
+				'navigateToPhoto',  
+				'albumSelected', 
+				'selectPhoto',
+				'showPhoto'
+				);
 
 			this.albums = options.albums;			
 			this.albums.on('change:selected', this.albumSelected);
 			this.router = options.router;
+			this.selectedPhotoId = -1;
 			
 			// load the selected album, otherwise, the first album
 			var albumid = options.album ? options.album : 1;
@@ -180,23 +186,45 @@ Gallery.View = (function() {
 						if (selected) {
 							_this.photos.each(function (otherPhoto) {
 								if (otherPhoto.id !== photo.id) {
-									otherPhoto.set('selected', false, { silent: true });
+									otherPhoto.set('selected', false);
 								}
 							});
+
+							var currAlbum = _this.albums.filter(function(a) {
+								return a.get('selected');
+							})[0];
+
+							_this.navigateToPhoto(currAlbum, photo);
 						}
 					});			
 				} else {
 					this.photos.reset(photos);
 				}
-				// select the first photo in the album
+
 				this.photos.first().set('selected', true);
 			}
 		},
-		navigateToAlbum: function(album) {
-			this.router.navigate('album/' + album.get('id') + '/' + album.get('photos')[0].id, true);
+		navigateToPhoto: function(album, photo) {
+			this.router.navigate('album/' + album.get('id') + '/' + photo.get('id'), false);
 		},
-		navigateToPhoto: function(photo) {
-			this.router.navigate('album/' + this.currentAlbum.get('id') + '/' + photo.get('id'), true);
+		selectPhoto: function(photoId) {
+			var currPhoto = this.photos.filter(function(p) {
+				 return p.get('id') == photoId;
+			});	
+			if (currPhoto.length === 0) { 
+				this.photos.first().set('selected', true);
+			} else {
+				currPhoto[0].set('selected', true);
+			}
+		},
+		showPhoto: function(albumId, photoId) {
+			var album = this.albums.filter(function(a) {
+				return a.get('id') == albumId
+			});
+			if (album.length > 0) {
+				album[0].set('selected', true);
+				this.selectPhoto(photoId);
+			}
 		}
 	});
 	
@@ -378,51 +406,36 @@ Gallery.View = (function() {
 Gallery.Router = (function() {
 	var Main = Backbone.Router.extend({
 		routes: {
-			'album/:album' : 'showAlbum',
+			'album/:album' : 'showPhoto',
 			'album/:album/:photo' : 'showPhoto'
 		},
-		defaultRoute: function() {
-			this.showAlbum();
-		},
-		initGallery: function(album, photo) {
-			if (this.initialized) {
-				return;	
-			}
-			
-			this.initialized = true;
+		initialize: function() {			
 			$.ajax({
 				url: 'sample.json',
 				context: this,
 				dataType: 'json',
 				success: function(data) {
-					var albums = new Gallery.Collection.Albums(data);
-					this.albumView = new Gallery.View.GalleryView({
-						albums: albums,
-						router: this,
-						selectedAlbum: album
+					this.albums = new Gallery.Collection.Albums(data);
+					this.galleryView = new Gallery.View.GalleryView({
+						albums: this.albums,
+						router: this
 					});
-					$('body').append(this.albumView.render().el);
-					if (photo) {
-						this.albumView.selectPhoto(album, photo);
+					$('body').append(this.galleryView.render().el);
+					if (this.initDoneCb) {
+						this.initDoneCb();
+						delete this.initDoneCb;
 					}
+					this.initialized = true;
 				}
-			});			
-		},
-		showAlbum: function(album, photo) {
-			if (!this.initialized) {
-				this.initGallery(album, photo);	
-			} else {
-				if (!photo) {
-					photo = 1;
-				}
-				this.albumView.selectPhoto(album, photo);
-			}		
+			});	
 		},
 		showPhoto: function(album, photo) {
-			if (!this.initialized) {
-				this.initGallery(album, photo);
+			if (this.initialized) {
+				this.galleryView.showPhoto(album, photo);
 			} else {
-				this.albumView.selectPhoto(album, photo);
+				this.initDoneCb = function() {
+					this.galleryView.showPhoto(album, photo);
+				}
 			}
 		}		
 	});
@@ -435,7 +448,4 @@ Gallery.Router = (function() {
 $(document).ready(function() {
 	var router = new Gallery.Router.Main();
 	Backbone.history.start();
-	if (!router.initialized) {
-		router.showAlbum(1);
-	}
 });
